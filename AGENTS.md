@@ -1,23 +1,12 @@
-# CoolCode browser tool conventions
+# Working on Contaminated Places
 
-- Keep app source in `web/`, build code in `scripts/`, and meaningful tests in `tests/`.
-  Never commit `dist/`. Do not add dependencies without a concrete application need.
-- Run `scripts/init.py` as documented in README, then replace the example UI,
-  behaviour, tests and privacy text. Review all fields in `tool.json`.
-- Keep `access: "browser"` for the usable web tool. Selecting local files is not
-  installation. The hub renders its standard access label from this field.
-- Keep assets and imports relative so the app works at `/<repo>/`. Do not add a
-  CNAME or claim the hub's domain. Link home to `https://coolcode.ca/`.
-- Keep transformations separate from DOM code. Render untrusted input through
-  textContent/value, not innerHTML. Never embed API secrets.
-- State which inputs leave the browser. Do not retain pasted text or uploads by
-  default. Namespace preferences as `coolcode:<tool-id>:<key>`; paths share storage.
-- Run `node --test tests/*.test.mjs`, `python3 -m unittest discover -s tests -v`,
-  and `python3 scripts/build.py`. Preview `dist/` using a local HTTP server.
-- Update `tests/browser_smoke.py` when replacing the sample UI. CI runs it with
-  Chromium; `tests/browser-requirements.txt` contains the test-only dependency.
-- The default build is offline. Add data refresh only when needed, with validation
-  and visible source/build dates. Failed refreshes must not replace good deployments.
-- PRs check/build; successful `main` builds deploy. The template repo skips deployment.
-- Once deployed, copy the reviewed `tool.json` record into `data/tools.json` in
-  `jsdyer/jsdyer.github.io`. Don't register the starter itself as a finished tool.
+- Keep browser source in `web/`, build/ingestion code in `scripts/`, validated compressed snapshots in `data/`, configuration in `config/`, and meaningful tests in `tests/`. Never commit `dist/`.
+- This is a finished national FCSI discovery tool, not a starter. Preserve its identity and public `/contaminatedplaces/` path. Do not add a CNAME.
+- Keep data transformations separate from DOM code. Render external text using textContent, not innerHTML. No API secrets belong in browser code.
+- `config/source.json` owns source URLs and ingestion guards. Do not turn a source outage into a successful empty data refresh. Preserve the prior snapshot and check date on failure.
+- Source check time, server Last-Modified, record modification date and fiscal reporting year have different meanings. Never substitute one for another.
+- Keep all source records, including overseas sites and missing coordinates. Derive filters/counts from captured data. When combining contaminant and medium, match their source pair.
+- Do not infer present danger, remediation completeness or property safety from inventory membership, status or completed step. Keep published labels accurate.
+- Location search is opt-in and tab-local. Do not persist coordinates or include them in shared URLs. Preserve the offline outline map and optional street tiles.
+- Run `node --test tests/*.test.mjs`, `python3 -m unittest discover -s tests -v`, `python3 scripts/build.py`, and the browser smoke check when its installed Chromium is available.
+- Update the README's marked guide for changed inputs/results/coverage/schedules. Reconcile tool.json and the main catalogue using the hub's docs/tool-lifecycle.md. New schedules require guard and watchdog review.

@@ -1,12 +1,41 @@
 {
-  "id": "coolcode-tool-template",
-  "title": "CoolCode Tool Starter",
-  "description": "A browser-only example that trims lines and removes exact duplicates.",
-  "category": "security",
-  "tags": ["text", "lines", "duplicates"],
-  "icon": "scan-search",
-  "url": "/coolcode-tool-template/",
-  "source": "https://github.com/jsdyer/coolcode-tool-template",
+  "id": "contaminatedplaces",
+  "title": "Contaminated Places",
+  "description": "Find federal contaminated sites across Canada by place, contaminant, status and cleanup stage.",
+  "category": "places",
+  "tags": [
+    "contaminated sites",
+    "Canada",
+    "cleanup",
+    "soil",
+    "groundwater",
+    "BC",
+    "Nova Scotia",
+    "environment"
+  ],
+  "icon": "map",
+  "url": "/contaminatedplaces/",
+  "source": "https://github.com/jsdyer/contaminatedplaces",
   "hosting": "project",
-  "access": "browser"
+  "access": "browser",
+  "data_info": {
+    "mode": "snapshot",
+    "detail": "The official Federal Contaminated Sites Inventory covers Canada and some overseas federal sites, with current reported status, contaminants and cleanup steps.",
+    "cadence": "Weekly",
+    "probes": [
+      {
+        "url": "https://coolcode.ca/contaminatedplaces/data/status.json",
+        "path": [
+          "checked_at"
+        ],
+        "label": "Source checked",
+        "count_at": {
+          "path": [
+            "count"
+          ],
+          "unit": "federal sites"
+        }
+      }
+    ]
+  }
 }

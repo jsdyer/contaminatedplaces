@@ -1,4 +1,5 @@
 import json
+import gzip
 from pathlib import Path
 import shutil
 import sys
@@ -15,6 +16,9 @@ class BuildTests(unittest.TestCase):
         self.root = Path(self.temporary.name)
         shutil.copytree(ROOT / "web", self.root / "web")
         shutil.copyfile(ROOT / "tool.json", self.root / "tool.json")
+        (self.root / "data").mkdir()
+        (self.root / "data/status.json").write_text(json.dumps({"count": 1}))
+        (self.root / "data/sites.json.gz").write_bytes(gzip.compress(json.dumps({"schema_version": 1, "sites": [{"id": "TEST"}]}).encode()))
 
     def edit(self, **changes):
         tool = json.loads((self.root / "tool.json").read_text())

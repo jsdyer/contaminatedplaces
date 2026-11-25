@@ -1,33 +1,55 @@
 <!doctype html>
 <html lang="en-CA">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="{{DESCRIPTION}}">
-  <title>{{TITLE}} · CoolCode</title>
-  <link rel="stylesheet" href="./style.css">
-  <script type="module" src="./app.mjs"></script>
+  <title>{{TITLE}} · Federal contaminated sites map · CoolCode</title>
+  <link rel="canonical" href="https://coolcode.ca/contaminatedplaces/">
+  <link rel="stylesheet" href="./vendor/leaflet.css"><link rel="stylesheet" href="./style.css">
+  <script defer src="./vendor/leaflet.js"></script><script type="module" src="./app.mjs"></script>
 </head>
 <body data-tool-id="{{TOOL_ID}}">
-  <a class="skip" href="#main">Skip to content</a>
-  <header><a href="https://coolcode.ca/">← CoolCode.ca</a><a href="{{SOURCE_URL}}">Source &amp; instructions ↗</a></header>
-  <main id="main">
-    <p class="eyebrow">Browser tool starter</p>
-    <h1>{{TITLE}}</h1>
-    <p class="intro">{{DESCRIPTION}}</p>
-    <section aria-labelledby="example-title">
-      <h2 id="example-title">Clean a list</h2>
-      <p>Trim spaces, skip blank lines and remove exact duplicates. Capitalization stays distinct.</p>
-      <div class="panels">
-        <div><label for="input">Your lines</label><textarea id="input" rows="10" maxlength="100000" spellcheck="false" placeholder="Paste one item per line"></textarea></div>
-        <div><label for="output">Cleaned lines</label><textarea id="output" rows="10" readonly spellcheck="false"></textarea></div>
-      </div>
-      <div class="actions"><button id="sample" type="button">Load example</button><button id="clear" type="button">Clear</button><button id="copy" type="button" hidden>Copy result</button></div>
-      <p id="status" role="status" aria-live="polite">Paste a list to begin.</p>
-      <noscript><p>This tool needs JavaScript to process your text. The source is available above.</p></noscript>
-    </section>
-    <aside aria-label="Privacy"><strong>Stays on your device.</strong> This example makes no API requests and does not save your text. Reloading clears it.</aside>
-  </main>
-  <footer>Part of <a href="https://coolcode.ca/">the CoolCode collection</a>.</footer>
-</body>
-</html>
+<a class="skip" href="#main">Skip to content</a>
+<header><a href="https://coolcode.ca/">CoolCode.ca</a><a href="{{SOURCE_URL}}">Source &amp; instructions</a></header>
+<main id="main">
+  <p class="eyebrow">Canada · Federal environmental records</p>
+  <h1>{{TITLE}}</h1><p class="intro">{{DESCRIPTION}}</p>
+  <p class="scope">Explore the recorded status of a place, see which contaminants were reported, and follow the cleanup record. Includes active, suspected and closed sites; a listing alone does not establish a present-day health risk.</p>
+  <p id="edition" class="edition" role="status">Loading the latest successful source check…</p>
+  <section class="search-panel" aria-labelledby="search-heading">
+    <h2 id="search-heading">Find a place</h2>
+    <label for="q">Place, site name, federal site ID or contaminant</label>
+    <input id="q" type="search" maxlength="500" placeholder="Try Halifax, Langley, an airport, or PFAS" autocomplete="off">
+    <div class="presets"><button type="button" data-province="British Columbia">British Columbia</button><button type="button" data-province="Nova Scotia">Nova Scotia</button><button type="button" id="all-canada">All records</button></div>
+    <div class="filters">
+      <div><label for="province">Province or territory</label><select id="province"><option value="">All regions</option></select></div>
+      <div><label for="status">Inventory status</label><select id="status"><option value="">All statuses</option></select></div>
+      <div><label for="contaminant">Contaminant</label><select id="contaminant"><option value="">All contaminants</option></select></div>
+      <div><label for="strategy">Management strategy</label><select id="strategy"><option value="">All strategies</option></select></div>
+    </div>
+    <details><summary>More filters and nearby search</summary><div class="filters advanced">
+      <div><label for="medium">Affected medium</label><select id="medium"><option value="">All media</option></select></div>
+      <div><label for="step">Latest completed cleanup step</label><select id="step"><option value="">All reported steps</option></select></div>
+      <div><label for="custodian">Federal custodian</label><select id="custodian"><option value="">All custodians</option></select></div>
+      <div><label for="sort">Sort results</label><select id="sort"><option value="">Site name</option><option value="status">Active, suspected, closed</option><option value="updated">Most recently modified record</option></select></div>
+    </div><div class="nearby">
+      <p>Search near a coordinate or your location. Nearby results are sorted by straight-line distance; records without coordinates are excluded.</p>
+      <div class="filters coordinates"><div><label for="latitude">Latitude</label><input id="latitude" type="number" min="-90" max="90" step="any" placeholder="44.65"></div><div><label for="longitude">Longitude</label><input id="longitude" type="number" min="-180" max="180" step="any" placeholder="-63.57"></div><div><label for="radius">Within (km)</label><input id="radius" type="number" min="1" max="2000" step="1" value="25"></div></div>
+      <div class="actions"><button id="near-coordinates" type="button">Search these coordinates</button><button id="near-me" type="button">Use my location</button><button id="clear-near" type="button" hidden>Clear nearby search</button></div><p id="near-status" role="status"></p>
+    </div></details>
+    <div class="actions"><button id="reset" type="button">Reset filters</button><button id="download" type="button" disabled>Download matching CSV</button><button id="share" type="button">Copy search link</button></div><p id="action-status" role="status"></p>
+  </section>
+  <section aria-labelledby="results-heading"><div class="result-heading"><h2 id="results-heading">Matching sites</h2><p id="result-count" role="status" aria-live="polite">Loading sites…</p></div>
+    <p class="legend"><span class="active">Active</span><span class="suspected">Suspected</span><span class="closed">Closed</span> · Colour shows inventory status, not severity.</p>
+    <div id="map" aria-label="Map of matching sites" tabindex="0"></div>
+    <div class="map-controls"><button id="fit-map" type="button">Fit matching sites</button><label class="checkbox"><input id="street-map" type="checkbox"> Street map (loads OpenStreetMap tiles)</label></div><p id="map-status" class="muted">All results remain available in the list.</p>
+    <div class="results-layout"><div><div id="results" aria-label="Site results"></div><nav class="pagination" aria-label="Results pages"><button id="previous" type="button">Previous</button><span id="page-number"></span><button id="next" type="button">Next</button></nav></div><article id="details" class="detail-panel" aria-labelledby="detail-title"><h3 id="detail-title">Choose a site</h3><p>Select a result or a point on the map to see reported contaminants, cleanup stage and the official record.</p></article></div>
+  </section>
+  <section class="explainer" aria-labelledby="understand"><h2 id="understand">What this map can tell you</h2>
+    <div class="explain-grid"><div><h3>Federal responsibility</h3><p>This is the Federal Contaminated Sites Inventory, including sites where Canada has accepted financial responsibility. It also contains some overseas federal sites, grouped under “Outside Canada / province not reported.” It is not a complete list of provincial, municipal or private contaminated properties.</p></div><div><h3>Read status and stage together</h3><p>Suspected sites need assessment. Active sites may be in investigation, remediation, risk management or monitoring. Closed records can include sites where no contamination was found. A completed step describes reported work, not a safety certificate.</p></div><div><h3>Check the record date</h3><p>Source checks run weekly. An older site-modified date or fiscal year is kept as published. Coordinates are approximate and some are missing. Consult the custodian and official record for current conditions.</p></div></div>
+    <p>For year-by-year spending and investigation histories in BC and Nova Scotia, use <a href="https://coolcode.ca/toxic-ground/">Toxic Ground</a>.</p>
+  </section>
+  <aside><h2>Sources and privacy</h2><p><a href="https://open.canada.ca/data/en/dataset/1d42f7b9-1549-40aa-8ac6-0e0302ff2902">Federal Contaminated Sites Inventory · Treasury Board of Canada Secretariat</a>. Contains information licensed under the <a href="https://open.canada.ca/en/open-government-licence-canada">Open Government Licence – Canada</a>. Local map outlines: <a href="https://www.naturalearthdata.com/">Natural Earth</a> (public domain).</p><p>Searches run in your browser against the published snapshot. The search link contains your filters; location coordinates are kept only in this tab and are omitted from shared links. The optional street map sends tile requests to OpenStreetMap. No account, API key or installation is needed.</p></aside>
+  <noscript><p>JavaScript is required to search this map. You can download the <a href="./data/sites.json">published site records</a> or use the official inventory linked above.</p></noscript>
+</main><footer>An independent public-data tool from <a href="https://coolcode.ca/">CoolCode</a>.</footer>
+</body></html>

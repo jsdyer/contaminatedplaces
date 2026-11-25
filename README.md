@@ -1,102 +1,66 @@
-# CoolCode browser tool template
+# Contaminated Places
 
-A starting point for independent tools at `coolcode.ca/<repo>/`: a working local-text
-example, responsive UI, Python standard-library build, Node tests, PR checks and Pages
-publication. No npm install is needed.
+[Open Contaminated Places](https://coolcode.ca/contaminatedplaces/)
 
-## One-time template setup
+A searchable map of the complete **Federal Contaminated Sites Inventory**: find a place, inspect reported contaminants and cleanup status, then follow its official record. The browser app needs no account, installation or API key.
 
-Enable **Settings → General → Template repository** here. This repository does not
-need Pages enabled: its workflow builds/tests but intentionally skips deployment.
-New copies also skip deployment until `scripts/init.py` sets the tool ID to match
-their repository name. This lets you create the repo before configuring Pages.
+<!-- coolcode:guide -->
+Search Halifax or choose British Columbia, then narrow the results by contaminant, inventory status, management strategy or completed cleanup step. Select a site for its custodian, record date and reported contaminant/media pairs. Download every matching result as CSV, or copy a link to the current search and selected site. Nearby search accepts coordinates or optional browser location permission. Closed records remain searchable; a listing alone is not evidence of present-day danger.
+<!-- /coolcode:guide -->
 
-## Start a new tool
+## What is included
 
-1. Select **Use this template → Create a new repository**, choose owner `jsdyer`,
-   a unique lowercase name such as `my-tool`, and public visibility.
-2. Clone the new repository. Use Python 3.12+ and Node 24+.
-3. Set the identity, using a slug that matches the repository name:
+The complete federal export is retained, including records without coordinates and overseas federal sites. The province selector groups missing provinces under **Outside Canada / province not reported**. This is not an inventory of every contaminated property: provincial, municipal and private sites outside federal responsibility may be absent.
+
+- Search site names, municipality, province, country, federal site ID, custodian, property number, contaminants and media. Search words are combined and accents are ignored.
+- Combine province, status, contaminant, affected medium, management strategy, custodian and latest reported cleanup step. When both a contaminant and medium are selected, they must occur in the **same reported pair**.
+- Browse all matching records with 25 results per page. CSV exports contain **all** matches, including unmapped sites. Numeric coordinates remain numeric; untrusted text beginning with a spreadsheet formula character is neutralized.
+- Use optional nearby search (1–2,000 km). Results use straight-line distance and exclude records without usable coordinates. Other filters still apply. The selected location is kept only in the tab and is omitted from shared links.
+- Zoom map point groups or choose an individual record within an overlapping group. The local Natural Earth outline map works without an external map service. Street tiles from OpenStreetMap are optional.
+- BC and Nova Scotia records link directly to [Toxic Ground](https://coolcode.ca/toxic-ground/) for their year-by-year spending and investigation history. Contaminated Places concentrates on nationwide current discovery; Toxic Ground provides deeper regional history.
+
+**Read status, classification and cleanup step separately.** Closed can mean no contamination was found or work was completed. Suspected means further assessment is needed. An active record can be in assessment, remediation, risk management or monitoring. The latest completed step is taken from the latest fiscal year, not from the highest step ever reported. Conflicting steps in the same latest year are preserved. None of these labels is a safety certificate.
+
+## Data and dates
+
+Source: Treasury Board of Canada Secretariat, [Federal Contaminated Sites Inventory](https://open.canada.ca/data/en/dataset/1d42f7b9-1549-40aa-8ac6-0e0302ff2902), [official ZIP/XML export](https://map-carte.tbs-sct.gc.ca/fcsi-rscf/oddo/fcsi-rscf.zip).
+
+A successful refresh records its actual UTC check time in `data/status.json` (`checked_at`, also date-only `retrieved`). `source_modified` is the download server's Last-Modified header, not the date every individual record was updated. Site-modified dates and latest fiscal years are preserved separately. The source ZIP SHA-256 is recorded for reproducibility. The page warns when its last successful check is more than 14 days old.
+
+The initial verified import on **2026-11-25 UTC** contains **24,433 records**, including **23,509 with usable coordinates**. These figures are an import receipt, not a fixed application limit: filters, map groups, pages and exports derive from each snapshot. HTTP 200 was verified for the official download and a sample official site-detail link. Missing, out-of-range, non-finite and zero/zero coordinates remain in the list but are not mapped.
+
+Contains information licensed under the [Open Government Licence – Canada](https://open.canada.ca/en/open-government-licence-canada). Natural Earth outlines derive from its public-domain 1:50m admin-1 dataset. Leaflet 1.9.4 is bundled under its [BSD licence](web/vendor/LICENSE). Optional map tiles contain © OpenStreetMap contributors. Source data can contain omissions or outdated records; verify a site's current circumstances with its official custodian.
+
+## Refresh, test and build
+
+Python 3.12+ and Node 24+ are used in CI. The application and build use no npm dependencies. Playwright is a browser-test dependency only.
 
 ```sh
-python3 scripts/init.py my-tool --title "My Tool" --description "Describe what this tool does."
-```
-
-Review the category, tags and icon in `tool.json`. `access: "browser"` tells the main
-catalogue that the tool works immediately without installation. `--owner` supports a different
-GitHub owner, but only projects owned by `jsdyer` inherit the CoolCode domain.
-
-4. Replace the example in `web/` and its tests. Update the privacy explanation,
-   source attribution and README to describe the real tool.
-5. Test and preview:
-
-```sh
+python3 scripts/refresh.py
 node --test tests/*.test.mjs
 python3 -m unittest discover -s tests -v
 python3 scripts/build.py
 python3 -m http.server 8000 --directory dist
 ```
 
-Open `http://localhost:8000/`. The example trims lines, skips blanks and removes exact
-duplicates, preserving first-seen order and capitalization. It makes no API requests
-and does not persist text. Update that explanation if your app behaves differently.
+Open `http://localhost:8000/`. Ordinary builds are offline: `data/sites.json.gz` is the validated checked-in snapshot, expanded to `dist/data/sites.json`. `data/status.json` is copied to `dist/data/status.json` for the page and external freshness monitoring. `dist/` is generated and is never committed.
 
-CI also tests the browser flow and mobile layout at a project subpath. Replace the
-sample assertions in `tests/browser_smoke.py` when implementing your own UI. To run
-that check locally (optional for ordinary preview):
+For the browser test, install `tests/browser-requirements.txt`, provide an existing Chromium with `CHROMIUM_PATH=/path/to/chromium`, then run `python3 tests/browser_smoke.py` after the build. The test exercises the app at a project subpath, searching, selection, official/history links, selected-record deep links, export, empty results, nearby search and a mobile viewport.
 
-```sh
-python3 -m venv .venv
-. .venv/bin/activate
-python3 -m pip install -r tests/browser-requirements.txt
-python3 -m playwright install --with-deps chromium
-python3 tests/browser_smoke.py
-```
+Configuration lives in [`config/source.json`](config/source.json): official download and catalogue URLs, timeouts, size limits, minimum coverage and permitted record-count decline. Change these only after reviewing an upstream schema or coverage change; they are integrity guards, not result limits. Adding or changing filters does not require rebuilding the source export format unless its fields change. There is no fixed province or site watchlist.
 
-Playwright is a test-only dependency; the app and its static build do not use it.
+A refresh validates the entire download before replacing the cache, including ZIP/XML structure, IDs, coordinates, inventory status, complete provincial coverage and unexpected record loss. Failed downloads, HTTP 403/404, malformed data or failing tests stop the workflow and retain the previous working deployment and its truthful check date.
 
-## Publish and register
+## Publication and schedule
 
-When the actual tool is ready, in the **new tool repository** set **Settings → Pages → Build and deployment →
-Source → GitHub Actions**. Push to `main`, or manually run **Browser tool · Check and
-publish** after enabling Pages. If the initial deployment ran before Pages was enabled,
-enable it and rerun. PRs only check/build and provide a downloadable preview artifact.
+`.github/workflows/pages.yml` checks every push and pull request. Only successful `main` builds publish through GitHub Pages; PRs receive preview artifacts. The workflow configures Pages with `enablement: true` and deploys only `dist/`.
 
-Keep asset paths and module imports relative. Check `https://coolcode.ca/my-tool/`.
-Do not add a CNAME or set `coolcode.ca` as this project's custom domain; the account
-site supplies it. Only successful `main` builds deploy.
+The same workflow refreshes the source every **Wednesday at 11:23 UTC** (`23 11 * * 3`) and on pushes to `main` or manual `workflow_dispatch`, with no required inputs. These refreshes commit the validated snapshot after tests, then publish it. Pull requests test the checked-in snapshot without contacting the source. Concurrent publications are serialized, and a push conflict fails instead of overwriting another commit.
 
-After verifying the app, copy the reviewed object from `tool.json` into `data/tools.json`
-in [the main site](https://github.com/jsdyer/jsdyer.github.io). Each tool still builds
-independently. Update the hub record when listing metadata changes; the hub is the
-authority for discovery. Ordinary app updates touch only this repository.
+The independent `.github/workflows/schedule-guard.yml` runs each Wednesday at 19:17 UTC. It explicitly covers `pages.yml` and itself, restores inactivity-disabled workflows, and preserves workflows disabled manually. GitHub schedules can still be delayed or dropped; the central CoolCode watchdog monitors `data/status.json` and can dispatch the refresh independently once repository permission is granted.
 
-The main site separates **Use in your browser** from **Install yourself**. An app
-that asks for a file is still a browser tool. Standalone Linux packages should start
-in their own repositories with their own build/release workflow, rather than copying
-this browser-only scaffold. Their hub record uses `access: "install"`, links to an
-installation guide, and includes `requirements`.
+Central integration belongs in `jsdyer/jsdyer.github.io`: reviewed `tool.json` catalogue record, this README guide, repository accounting, generated Cloudflare ID registry, operations/watchdog target and freshness probe, and generated sitemap. No API keys or registration are required.
 
-## Files
+## Privacy
 
-| Path | Purpose |
-| --- | --- |
-| `tool.json` | Page metadata and a ready-to-copy catalogue record |
-| `web/` | HTML, responsive CSS, DOM interactions and separate model logic |
-| `scripts/build.py` | Escape metadata and build `web/` into `dist/` |
-| `scripts/init.py` | Set a new project's identity |
-| `tests/` | Application and builder tests |
-| `.github/workflows/pages.yml` | Check PRs and publish successful main builds |
-| `AGENTS.md` | Instructions for future coding work |
-
-Namespace optional storage as `coolcode:<tool-id>:<key>`; CoolCode paths share a
-browser origin. Don't save pasted text/uploads by default. Document external APIs
-and send only the information needed for the selected action. Never embed secrets.
-
-Scheduled refresh is opt-in. Validate source data before deploying, display its date,
-and preserve the last good deployment on failure. Public-repository schedules can
-stop after 60 days without repository activity.
-
-Templates don't propagate future edits automatically. Adopt fixes explicitly and
-consider a versioned reusable workflow once several tools confirm the shared process.
-Choose and add the intended software license before distributing a new project.
+Search and filter calculations run in the browser using the published data. Filters and the selected record appear in the URL so searches can be shared. Nearby coordinates are never stored in local storage or inserted in the URL. Browser geolocation runs only after pressing **Use my location**. Optional OpenStreetMap tiles send tile requests to that provider; clicking an official link opens the government website.

@@ -2,6 +2,7 @@
 """Build a browser tool using Python's standard library; no network required."""
 from html import escape
 import json
+import gzip
 from pathlib import Path
 import re
 import shutil
@@ -15,7 +16,7 @@ SLUG = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
 def metadata(root=ROOT):
     tool = json.loads((root / "tool.json").read_text(encoding="utf-8"))
     required = {"id", "title", "description", "category", "tags", "icon", "url", "source", "hosting", "access"}
-    if not isinstance(tool, dict) or set(tool) != required:
+    if not isinstance(tool, dict) or not required.issubset(tool) or set(tool) - required - {"data_info"}:
         raise ValueError("tool.json has missing or unknown fields")
     for key in required - {"tags"}:
         if not isinstance(tool[key], str) or not tool[key].strip():
@@ -43,6 +44,16 @@ def build(root=ROOT):
     with tempfile.TemporaryDirectory(prefix="coolcode-tool-") as temporary:
         stage = Path(temporary) / "site"
         shutil.copytree(web, stage)
+        source_data = root / "data"
+        status = json.loads((source_data / "status.json").read_text())
+        raw = gzip.decompress((source_data / "sites.json.gz").read_bytes())
+        payload = json.loads(raw)
+        sites = payload.get("sites", [])
+        if payload.get("schema_version") != 1 or not sites or len(sites) != status.get("count") or len({row["id"] for row in sites}) != len(sites):
+            raise ValueError("Invalid or mismatched data snapshot")
+        (stage / "data").mkdir()
+        (stage / "data/sites.json").write_bytes(raw)
+        shutil.copyfile(source_data / "status.json", stage / "data/status.json")
         index = stage / "index.html"
         page = index.read_text(encoding="utf-8")
         for token, key in {"TITLE": "title", "DESCRIPTION": "description", "TOOL_ID": "id", "SOURCE_URL": "source"}.items():
