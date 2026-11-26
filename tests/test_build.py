@@ -37,6 +37,16 @@ class BuildTests(unittest.TestCase):
         self.assertFalse((self.root / "dist/private.txt").exists())
         self.assertTrue((self.root / "dist/.nojekyll").exists())
 
+    def test_every_public_page_loads_the_shared_counter_once(self):
+        build(self.root)
+        pages = sorted((self.root / "dist").glob("*.html"))
+        self.assertEqual([page.name for page in pages], ["halifax.html", "index.html", "langley.html"])
+        for page in pages:
+            with self.subTest(page=page.name):
+                markup = page.read_text()
+                self.assertEqual(markup.count('src="/assets/tool-metrics.js"'), 1)
+                self.assertIn('src="/assets/tool-metrics.js" referrerpolicy="no-referrer"', markup)
+
     def test_url_matches_tool_id(self):
         self.edit(url="/different/")
         with self.assertRaises(ValueError): metadata(self.root)
