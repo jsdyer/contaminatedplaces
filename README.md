@@ -64,3 +64,8 @@ Central integration belongs in `jsdyer/jsdyer.github.io`: reviewed `tool.json` c
 ## Privacy
 
 Search and filter calculations run in the browser using the published data. Filters and the selected record appear in the URL so searches can be shared. Nearby coordinates are never stored in local storage or inserted in the URL. Browser geolocation runs only after pressing **Use my location**. Optional OpenStreetMap tiles send tile requests to that provider; clicking an official link opens the government website.
+
+## Ready-to-use searches
+
+- [Federal Contaminated Sites in Langley, BC](https://coolcode.ca/contaminatedplaces/langley.html). Explore federal inventory records matching Langley in British Columbia. Choose a site to inspect its reported status, contaminants, cleanup stage and official record. Closed records are included.
+- [Federal Contaminated Sites in Halifax, Nova Scotia](https://coolcode.ca/contaminatedplaces/halifax.html). Explore federal inventory records matching Halifax in Nova Scotia. Filter by contaminant or cleanup stage, then select a result to open the federal custodian’s record. Federal inventory coverage differs from provincial site registries.

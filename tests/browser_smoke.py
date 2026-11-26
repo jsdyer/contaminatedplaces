@@ -54,6 +54,12 @@ def main():
                 assert page.evaluate('document.documentElement.scrollWidth <= window.innerWidth')
                 page.screenshot(path=str(screenshots/'mobile.png'),full_page=True)
                 assert not errors, errors
+                page.goto(url + 'langley.html')
+                page.wait_for_function("document.querySelector('#province').value === 'British Columbia' && document.querySelector('#q').value === 'Langley' && document.querySelector('#results .result') !== null")
+                assert page.locator('link[rel="canonical"]').get_attribute('href') == 'https://coolcode.ca/contaminatedplaces/langley.html'
+                page.goto(url + 'halifax.html')
+                page.wait_for_function("document.querySelector('#province').value === 'Nova Scotia' && document.querySelector('#q').value === 'Halifax' && document.querySelector('#results .result') !== null")
+                assert page.locator('link[rel="canonical"]').get_attribute('href') == 'https://coolcode.ca/contaminatedplaces/halifax.html'
                 browser.close()
         finally: server.shutdown();server.server_close()
 if __name__=='__main__':main()

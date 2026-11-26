@@ -18,7 +18,7 @@ function populate() {
     fillSelect(id, sites.flatMap(s => s[key]), v => id === 'step' ? `${Number(v)} · ${STEP_NAMES[v] || 'Reported step'}` : v);
   }
   fillSelect('custodian', sites.map(s => s.custodian));
-  const stored = readFilters(location.search);
+  const stored = readFilters(location.search || document.body.dataset.filters || "");
   for (const key of FILTER_KEYS) $(key).value = stored[key];
 }
 function showDetails(site, focus = false) {

@@ -1,0 +1,16 @@
+[
+  {
+    "slug": "langley",
+    "title": "Federal Contaminated Sites in Langley, BC",
+    "description": "Explore federal inventory records matching Langley in British Columbia. Choose a site to inspect its reported status, contaminants, cleanup stage and official record. Closed records are included.",
+    "setting": "filters",
+    "value": "q=Langley&province=British+Columbia"
+  },
+  {
+    "slug": "halifax",
+    "title": "Federal Contaminated Sites in Halifax, Nova Scotia",
+    "description": "Explore federal inventory records matching Halifax in Nova Scotia. Filter by contaminant or cleanup stage, then select a result to open the federal custodian’s record. Federal inventory coverage differs from provincial site registries.",
+    "setting": "filters",
+    "value": "q=Halifax&province=Nova+Scotia"
+  }
+]
