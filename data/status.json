@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "checked_at": "2026-11-25T20:31:38Z",
-  "retrieved": "2026-11-25",
-  "source_modified": "2026-11-25T06:01:41+00:00",
-  "source_sha256": "36faab1a154b2a2c30b2c1d3479f80da48cfd7d973a911b00f6881bb34bc647c",
+  "checked_at": "2026-11-26T07:01:19Z",
+  "retrieved": "2026-11-26",
+  "source_modified": "2026-11-26T06:01:49+00:00",
+  "source_sha256": "4566873f043641a4916284d6fe4609a005f1a66fee94728779d290e9fa2588bf",
   "count": 24433,
   "mapped": 23509,
   "latest_fiscal_year": "2025-2026",
